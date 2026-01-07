@@ -9,7 +9,6 @@ on:
       - 'research_agent/**'
       - 'pyproject.toml'
       - 'uv.lock'
-      - '.version'
       - '.github/workflows/build-and-push.yml'
   workflow_dispatch:
 
@@ -48,17 +47,12 @@ jobs:
         id: agent_config
         run: |
           echo "config=$(cat research_agent/agent_config.json | jq -c .)" >> $GITHUB_OUTPUT
-          echo "version=$(cat .version | tr -d '\n')" >> $GITHUB_OUTPUT
-
-          # Read all skills from the skills folder
-          skills_array="[]"
-          for skill_dir in research_agent/skills/*/; do
-            if [ -f "${skill_dir}skill.yaml" ]; then
-              skill_json=$(cat "${skill_dir}skill.yaml" | yq -o=json -c .)
-              skills_array=$(echo "$skills_array" | jq --argjson skill "$skill_json" '. += [$skill]')
-            fi
-          done
-          echo "skills=$(echo $skills_array | jq -c .)" >> $GITHUB_OUTPUT
+          # Get version from agent_config.json or use default
+          VERSION=$(cat research_agent/agent_config.json | jq -r '.version // "1.0.0"')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Skills - return empty array since we don't have skill.yaml files
+          echo 'skills=[]' >> $GITHUB_OUTPUT
 
       - name: Log to backend service
         run: |
