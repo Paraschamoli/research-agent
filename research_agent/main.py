@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 import sys
+import traceback
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Optional
@@ -33,17 +34,31 @@ def load_config() -> dict:
         Path(__file__).parent.parent / "agent_config.json",  # Project root
         Path(__file__).parent / "agent_config.json",  # Same directory as main.py
         Path.cwd() / "agent_config.json",  # Current working directory
-        Path.cwd().parent / "agent_config.json",  # Parent of cwd
     ]
     
     for config_path in possible_paths:
+        print(f"🔍 Checking: {config_path} (exists: {config_path.exists()})")
         if config_path.exists():
-            print(f"📄 Loading config from: {config_path}")
-            with open(config_path, "r") as f:
-                return json.load(f)
+            try:
+                print(f"📄 Attempting to load config from: {config_path}")
+                with open(config_path, "r") as f:
+                    config = json.load(f)
+                    print(f"✅ Successfully loaded config")
+                    return config
+            except PermissionError as e:
+                print(f"⚠️  Permission denied for {config_path}: {e}")
+                print("   Try running as Administrator or check file permissions")
+                continue
+            except json.JSONDecodeError as e:
+                print(f"⚠️  Invalid JSON in {config_path}: {e}")
+                continue
+            except Exception as e:
+                print(f"⚠️  Error reading {config_path}: {type(e).__name__}: {e}")
+                traceback.print_exc()
+                continue
     
-    # If no config found, create a minimal default
-    print("⚠️  No agent_config.json found, using default configuration")
+    # If no config found or readable, create a minimal default
+    print("⚠️  No agent_config.json found or readable, using default configuration")
     return {
         "name": "research-agent",
         "description": "AI research agent for investigative journalism",
@@ -260,6 +275,7 @@ def main():
         print("\n🛑 Research Agent stopped")
     except Exception as e:
         print(f"❌ Error: {e}")
+        traceback.print_exc()
         sys.exit(1)
 
 

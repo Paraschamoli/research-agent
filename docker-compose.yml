@@ -4,7 +4,7 @@ services:
   research-agent:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.agent
     container_name: research_agent
     ports:
       - "3773:3773"
