@@ -1,0 +1,38 @@
+{
+    "author": "paras25619@gmail.com",
+    "name": "research-agent",
+    "description": "AI research agent that combines web search with professional journalism",
+    "version": "1.0.0",
+    "recreate_keys": false,
+    "skills": ["skills/question-answering", "skills/pdf-processing"],
+    "capabilities": {},
+    "agent_trust": "low",
+    "debug_mode": true,
+    "debug_level": 2,
+    "deployment": {
+        "url": "http://0.0.0.0:3773",
+        "expose": true,
+        "protocol_version": "1.0.0",
+        "proxy_urls": ["0.0.0.0"],
+        "cors_origins": ["*"]
+    },
+    "storage": {
+        "type": "memory"
+    },
+    "scheduler": {
+        "type": "memory"
+    },
+    "num_history_sessions": 5,
+    "environment_variables": [
+        {
+            "key": "OPENAI_API_KEY",
+            "description": "OpenAI API key for LLM calls",
+            "required": false
+        },
+        {
+            "key": "OPENROUTER_API_KEY",
+            "description": "OpenRouter API key for LLM calls",
+            "required": false
+        }
+    ]
+}

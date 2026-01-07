@@ -1,0 +1,47 @@
+id: pdf-processing-v1
+name: pdf-processing
+version: 1.0.0
+author: paras25619@gmail.com
+
+# Description
+description: |
+  Description of the pdf-processing skill.
+  TODO: Update this description with your skill's purpose.
+
+# Tags and Modes
+tags:
+  - pdf-processing
+  - TODO-add-relevant-tags
+
+input_modes:
+  - text/plain
+  - application/json
+
+output_modes:
+  - text/plain
+  - application/json
+
+# Example Queries
+examples:
+  - "TODO: Add example query 1"
+  - "TODO: Add example query 2"
+  - "TODO: Add example query 3"
+
+# Requirements
+requirements:
+  packages: []
+  system: []
+  min_memory_mb: 256
+
+# Performance Metrics
+performance:
+  avg_processing_time_ms: 1000
+  max_concurrent_requests: 10
+  memory_per_request_mb: 256
+  scalability: horizontal
+
+# Tool Restrictions
+allowed_tools:
+  - Read
+  - Write
+  - Execute
