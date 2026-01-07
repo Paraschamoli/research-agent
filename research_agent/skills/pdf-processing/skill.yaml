@@ -5,13 +5,18 @@ author: paras25619@gmail.com
 
 # Description
 description: |
-  Description of the pdf-processing skill.
-  TODO: Update this description with your skill's purpose.
+  **NOTE: This skill is declared but not currently implemented in the Research Agent.**
+
+  Intended for future PDF document analysis capabilities including text extraction,
+  document summarization, and information retrieval from academic papers, reports,
+  and research documents.
 
 # Tags and Modes
 tags:
-  - pdf-processing
-  - TODO-add-relevant-tags
+  - pdf-analysis
+  - document-processing
+  - text-extraction
+  - planned-feature
 
 input_modes:
   - text/plain
@@ -21,11 +26,11 @@ output_modes:
   - text/plain
   - application/json
 
-# Example Queries
+# Example Queries (Planned)
 examples:
-  - "TODO: Add example query 1"
-  - "TODO: Add example query 2"
-  - "TODO: Add example query 3"
+  - "Extract text from this research paper about climate change"
+  - "Summarize this financial report PDF"
+  - "Analyze tables from this academic document"
 
 # Requirements
 requirements:
@@ -43,5 +48,3 @@ performance:
 # Tool Restrictions
 allowed_tools:
   - Read
-  - Write
-  - Execute

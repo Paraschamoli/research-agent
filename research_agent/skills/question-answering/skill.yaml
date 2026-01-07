@@ -5,13 +5,19 @@ author: paras25619@gmail.com
 
 # Description
 description: |
-  Description of the question-answering skill.
-  TODO: Update this description with your skill's purpose.
+  Advanced question answering with deep research capabilities.
+  Combines web search with analytical reasoning to provide comprehensive,
+  well-researched answers to complex questions. Specializes in investigative
+  journalism-style research with fact verification and multi-source analysis.
 
 # Tags and Modes
 tags:
-  - question-answering
-  - TODO-add-relevant-tags
+  - research
+  - investigative-journalism
+  - fact-checking
+  - web-search
+  - multi-source-analysis
+  - ny-times-style
 
 input_modes:
   - text/plain
@@ -20,28 +26,35 @@ input_modes:
 output_modes:
   - text/plain
   - application/json
+  - text/markdown
 
 # Example Queries
 examples:
-  - "TODO: Add example query 1"
-  - "TODO: Add example query 2"
-  - "TODO: Add example query 3"
+  - "Research the impact of artificial intelligence on healthcare diagnostics in the last 5 years"
+  - "Investigate the economic consequences of climate change policies in European countries"
+  - "Analyze recent developments in quantum computing and their potential applications"
+  - "What are the ethical implications of CRISPR gene editing in human embryos?"
+  - "Compare renewable energy adoption rates in Germany, China, and the United States"
 
 # Requirements
 requirements:
-  packages: []
+  packages:
+    - duckduckgo-search>=7.1.0
+    - newspaper4k>=0.1.1
   system: []
-  min_memory_mb: 256
+  min_memory_mb: 512
 
 # Performance Metrics
 performance:
-  avg_processing_time_ms: 1000
-  max_concurrent_requests: 10
-  memory_per_request_mb: 256
-  scalability: horizontal
+  avg_processing_time_ms: 3000
+  max_concurrent_requests: 5
+  memory_per_request_mb: 512
+  scalability: vertical
 
 # Tool Restrictions
 allowed_tools:
+  - DuckDuckGoTools
+  - Newspaper4kTools
   - Read
-  - Write
-  - Execute
+  - Search
+  - Analyze
