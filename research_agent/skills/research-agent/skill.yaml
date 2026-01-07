@@ -1,14 +1,14 @@
-id: question-answering-v1
-name: question-answering
+id: research-agent-v1
+name: research-agent
 version: 1.0.0
 author: paras25619@gmail.com
 
 # Description
 description: |
-  Advanced question answering with deep research capabilities.
-  Combines web search with analytical reasoning to provide comprehensive,
-  well-researched answers to complex questions. Specializes in investigative
-  journalism-style research with fact verification and multi-source analysis.
+  An AI-powered investigative journalism assistant that combines real-time web search 
+  with professional reporting techniques. This skill enables deep research, fact-checking, 
+  and NYT-style report generation on any topic. It searches across multiple sources, 
+  analyzes content, and provides comprehensive, well-structured research reports.
 
 # Tags and Modes
 tags:
@@ -16,7 +16,9 @@ tags:
   - investigative-journalism
   - fact-checking
   - web-search
-  - multi-source-analysis
+  - article-analysis
+  - reporting
+  - data-analysis
   - ny-times-style
 
 input_modes:
@@ -39,17 +41,24 @@ examples:
 # Requirements
 requirements:
   packages:
+    - agno>=0.0.26
+    - bindu>=0.0.8
     - duckduckgo-search>=7.1.0
     - newspaper4k>=0.1.1
+    - openai>=1.60.0
+    - python-dotenv>=1.0.1
   system: []
   min_memory_mb: 512
+  external_services:
+    - DuckDuckGo Search API
+    - OpenAI API or OpenRouter API
 
 # Performance Metrics
 performance:
   avg_processing_time_ms: 3000
   max_concurrent_requests: 5
   memory_per_request_mb: 512
-  scalability: vertical
+  scalability: horizontal
 
 # Tool Restrictions
 allowed_tools:
@@ -58,3 +67,4 @@ allowed_tools:
   - Read
   - Search
   - Analyze
+  - Generate
