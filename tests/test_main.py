@@ -56,14 +56,13 @@ async def test_handler_with_multiple_messages():
 @pytest.mark.asyncio
 async def test_handler_initialization():
     """Test that handler initializes on first call."""
-    messages = [{"role": "user", "content": "Test"}]
 
     mock_response = MagicMock()
 
     # Start with _initialized as False to test initialization path
     with (
         patch("research_agent.main._initialized", False),
-        patch("research_agent.main.initialize_agent", new_callable=AsyncMock) as mock_init,
+        patch("research_agent.main.initialize_agent", new_callable=AsyncMock) as _,
         patch("research_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response),
         patch("research_agent.main._init_lock"),
     ):

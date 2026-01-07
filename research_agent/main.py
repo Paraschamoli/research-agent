@@ -202,7 +202,7 @@ async def run_agent(messages: list[dict[str, str]]) -> Any:
     """Run the agent with the given messages."""
     global agent
     if not agent:
-        raise RuntimeError("Agent not initialized")
+        raise RuntimeError("Agent not initialized")  # noqa: TRY003
 
     # Run the agent and get response
     response = await agent.arun(messages)
@@ -226,7 +226,7 @@ async def handler(messages: list[dict[str, str]]) -> Any:
 
 
 def main():
-    """Main entry point for the Research Agent."""
+    """Run the main entry point for the Research Agent."""
     parser = argparse.ArgumentParser(description="Bindu Research Agent")
     parser.add_argument(
         "--openai-api-key",
