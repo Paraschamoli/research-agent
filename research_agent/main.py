@@ -1,3 +1,5 @@
+"""Research Agent - AI investigative journalism agent."""
+
 # research_agent/main.py
 import argparse
 import asyncio
@@ -7,14 +9,13 @@ import sys
 import traceback
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.models.openrouter import OpenRouter
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.tools.newspaper4k import Newspaper4kTools
-
 from bindu.penguin.bindufy import bindufy
 from dotenv import load_dotenv
 
@@ -35,15 +36,15 @@ def load_config() -> dict:
         Path(__file__).parent / "agent_config.json",  # Same directory as main.py
         Path.cwd() / "agent_config.json",  # Current working directory
     ]
-    
+
     for config_path in possible_paths:
         print(f"🔍 Checking: {config_path} (exists: {config_path.exists()})")
         if config_path.exists():
             try:
                 print(f"📄 Attempting to load config from: {config_path}")
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     config = json.load(f)
-                    print(f"✅ Successfully loaded config")
+                    print("✅ Successfully loaded config")
                     return config
             except PermissionError as e:
                 print(f"⚠️  Permission denied for {config_path}: {e}")
@@ -56,7 +57,7 @@ def load_config() -> dict:
                 print(f"⚠️  Error reading {config_path}: {type(e).__name__}: {e}")
                 traceback.print_exc()
                 continue
-    
+
     # If no config found or readable, create a minimal default
     print("⚠️  No agent_config.json found or readable, using default configuration")
     return {
@@ -67,32 +68,24 @@ def load_config() -> dict:
             "url": "http://0.0.0.0:3773",
             "expose": True,
             "protocol_version": "1.0.0",
-            "proxy_urls": ["0.0.0.0"],
-            "cors_origins": ["*"]
+            "proxy_urls": ["127.0.0.1"],
+            "cors_origins": ["*"],
         },
         "environment_variables": [
-            {
-                "key": "OPENAI_API_KEY",
-                "description": "OpenAI API key for LLM calls",
-                "required": False
-            },
-            {
-                "key": "OPENROUTER_API_KEY",
-                "description": "OpenRouter API key for LLM calls",
-                "required": False
-            }
-        ]
+            {"key": "OPENAI_API_KEY", "description": "OpenAI API key for LLM calls", "required": False},
+            {"key": "OPENROUTER_API_KEY", "description": "OpenRouter API key for LLM calls", "required": False},
+        ],
     }
 
 
 async def initialize_agent() -> None:
     """Initialize the research agent with proper model and tools."""
     global agent
-    
+
     # Get API keys from environment
     openai_api_key = os.getenv("OPENAI_API_KEY")
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-    
+
     # Model selection logic (supports both OpenAI and OpenRouter)
     if openai_api_key:
         model = OpenAIChat(id="gpt-4o", api_key=openai_api_key)
@@ -104,11 +97,11 @@ async def initialize_agent() -> None:
         # Boot without error, fail at runtime when needed
         model = OpenAIChat(id="gpt-4o")
         print("⚠️  No API key provided - agent will fail at runtime")
-    
+
     # Initialize tools
     search_tools = DuckDuckGoTools()
     newspaper_tools = Newspaper4kTools()
-    
+
     # Create the research agent
     agent = Agent(
         name="Research Agent",
@@ -210,7 +203,7 @@ async def run_agent(messages: list[dict[str, str]]) -> Any:
     global agent
     if not agent:
         raise RuntimeError("Agent not initialized")
-    
+
     # Run the agent and get response
     response = await agent.arun(messages)
     return response
@@ -219,14 +212,14 @@ async def run_agent(messages: list[dict[str, str]]) -> Any:
 async def handler(messages: list[dict[str, str]]) -> Any:
     """Handle incoming agent messages with lazy initialization."""
     global _initialized
-    
+
     # Lazy initialization on first call
     async with _init_lock:
         if not _initialized:
             print("🔧 Initializing Research Agent...")
             await initialize_agent()
             _initialized = True
-    
+
     # Run the async agent
     result = await run_agent(messages)
     return result
@@ -253,19 +246,19 @@ def main():
         help="Path to agent_config.json (optional)",
     )
     args = parser.parse_args()
-    
+
     # Set environment variables if provided via CLI
     if args.openai_api_key:
         os.environ["OPENAI_API_KEY"] = args.openai_api_key
     if args.openrouter_api_key:
         os.environ["OPENROUTER_API_KEY"] = args.openrouter_api_key
-    
+
     print("🤖 Research Agent - Investigative Journalism AI")
     print("📰 Capabilities: Web search, article extraction, NYT-style reporting")
-    
+
     # Load configuration
     config = load_config()
-    
+
     try:
         # Bindufy and start the agent server
         print("🚀 Starting Bindu Research Agent server...")

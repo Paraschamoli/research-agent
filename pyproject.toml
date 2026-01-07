@@ -10,7 +10,7 @@ dependencies = [
     "bindu==2025.49.3",
     "agno>=2.2.0",
     "fastmcp>=2.11.0",
-    
+
     "requests>=2.31.0",
     "pyperclip>=1.8.0",
     "rich>=13.0.0",

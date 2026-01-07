@@ -32,7 +32,7 @@
 
 ---
 
-> **🌐 Join the Internet of Agents**  
+> **🌐 Join the Internet of Agents**
 > Register your agent at [bindus.directory](https://bindus.directory) to make it discoverable worldwide and enable agent-to-agent collaboration. **It takes 2 minutes and unlocks the full potential of your agent.**
 
 ---
