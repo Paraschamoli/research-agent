@@ -29,7 +29,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: Paraschamoli
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
@@ -40,9 +40,9 @@ jobs:
           file: ./Dockerfile.agent
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: Paraschamoli/research-agent:latest
-          cache-from: type=registry,ref=Paraschamoli/research-agent:buildcache
-          cache-to: type=registry,ref=Paraschamoli/research-agent:buildcache,mode=max
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache,mode=max
 
       - name: Read agent config
         id: agent_config
@@ -87,7 +87,7 @@ jobs:
               "deployment": {
                 "url": "${{ fromJson(steps.agent_config.outputs.config).deployment.url }}",
                 "protocol_version": "${{ fromJson(steps.agent_config.outputs.config).deployment.protocol_version }}",
-                "docker_image": "Paraschamoli/research-agent:latest",
+                "docker_image": "${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest",
                 "docker_digest": "${{ steps.docker_build.outputs.digest }}",
                 "platforms": ["linux/amd64", "linux/arm64"]
               },
