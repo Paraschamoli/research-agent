@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - "Dockerfile.agent"
-      - "research_agent/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/build-and-push.yml"
+      - 'Dockerfile.agent'
+      - 'research_agent/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/build-and-push.yml'
   workflow_dispatch:
 
 concurrency:
@@ -50,7 +50,7 @@ jobs:
           # Get version from agent_config.json or use default
           VERSION=$(cat research_agent/agent_config.json | jq -r '.version // "1.0.0"')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-
+          
           # Skills - return empty array since we don't have skill.yaml files
           echo 'skills=[]' >> $GITHUB_OUTPUT
 
