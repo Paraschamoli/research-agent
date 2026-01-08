@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "recreate_keys": false,
   "skills": [
-    "skills/research-agent"
+    "skills/research-agent/skill.yaml"
   ],
   "capabilities": {},
   "agent_trust": "low",

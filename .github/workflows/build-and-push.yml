@@ -43,16 +43,43 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache,mode=max
 
-      - name: Read agent config
+      - name: Install yq for YAML processing
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+
+      - name: Read agent config and skills
         id: agent_config
         run: |
+          # Read the agent config file
           echo "config=$(cat research_agent/agent_config.json | jq -c .)" >> $GITHUB_OUTPUT
-          # Get version from agent_config.json or use default
+
+          # Extract version
           VERSION=$(cat research_agent/agent_config.json | jq -r '.version // "1.0.0"')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # Skills - return empty array since we don't have skill.yaml files
-          echo 'skills=[]' >> $GITHUB_OUTPUT
+          # Get skill path from config or use default
+          SKILL_PATH=$(cat research_agent/agent_config.json | jq -r '.skills[0] // "skills/research-agent/skill.yaml"')
+
+          # Construct full path (relative to research_agent directory)
+          FULL_SKILL_PATH="research_agent/$SKILL_PATH"
+
+          if [ -f "$FULL_SKILL_PATH" ]; then
+            # Read skill info from YAML file
+            SKILL_NAME=$(yq eval '.name // .id // "research-agent"' "$FULL_SKILL_PATH")
+            SKILL_DESC=$(yq eval '.description // ""' "$FULL_SKILL_PATH" | tr '\n' ' ' | sed 's/"/\\"/g' | sed 's/|//g')
+            SKILL_VERSION=$(yq eval '.version // "1.0.0"' "$FULL_SKILL_PATH")
+            TAGS=$(yq eval '.tags // []' "$FULL_SKILL_PATH" -o=json 2>/dev/null || echo '[]')
+
+            # Create skill JSON object
+            SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": $TAGS}"
+            echo "skills=[$SKILL_JSON]" >> $GITHUB_OUTPUT
+          else
+            # Create default skill from agent config
+            AGENT_NAME=$(cat research_agent/agent_config.json | jq -r '.name // "research-agent"')
+            AGENT_DESC=$(cat research_agent/agent_config.json | jq -r '.description // "AI research agent"')
+            echo "skills=[{\"name\": \"$AGENT_NAME\", \"description\": \"$AGENT_DESC\", \"version\": \"$VERSION\"}]" >> $GITHUB_OUTPUT
+          fi
 
       - name: Log to backend service
         run: |
@@ -70,7 +97,7 @@ jobs:
                 "agent_trust": "${{ fromJson(steps.agent_config.outputs.config).agent_trust }}",
                 "type": "research"
               },
-              "skills": ${{ toJson(fromJson(steps.agent_config.outputs.skills)) }},
+              "skills": ${{ steps.agent_config.outputs.skills }},
               "framework": {
                 "name": "agno",
                 "version": "1.0.0"
@@ -92,8 +119,8 @@ jobs:
               },
               "metadata": {
                 "documentation_url": "https://Paraschamoli.github.io/research-agent/",
-                "domain": "${{ fromJson(steps.agent_config.outputs.config).metadata.domain || 'general' }}",
-                "specialization": "${{ fromJson(steps.agent_config.outputs.config).metadata.specialization || 'multi-purpose' }}",
+                "domain": "${{ fromJson(steps.agent_config.outputs.config).metadata.domain || 'journalism' }}",
+                "specialization": "${{ fromJson(steps.agent_config.outputs.config).metadata.specialization || 'investigative-research' }}",
                 "last_updated": "${{ github.event.head_commit.timestamp }}"
               }
             }'
