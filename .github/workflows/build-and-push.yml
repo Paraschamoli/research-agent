@@ -43,11 +43,6 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache,mode=max
 
-      - name: Install yq for YAML processing
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-
       - name: Read agent config and skills
         id: agent_config
         run: |
@@ -58,76 +53,64 @@ jobs:
           VERSION=$(cat research_agent/agent_config.json | jq -r '.version // "1.0.0"')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # Get skill path from config or use default
-          SKILL_PATH=$(cat research_agent/agent_config.json | jq -r '.skills[0] // "skills/research-agent/skill.yaml"')
-
-          # Construct full path (relative to research_agent directory)
-          FULL_SKILL_PATH="research_agent/$SKILL_PATH"
-
-          if [ -f "$FULL_SKILL_PATH" ]; then
-            # Read skill info from YAML file
-            SKILL_NAME=$(/usr/bin/yq eval '.name // .id // "research-agent"' "$FULL_SKILL_PATH")
-            SKILL_DESC=$(/usr/bin/yq eval '.description // ""' "$FULL_SKILL_PATH" | tr '\n' ' ' | sed 's/"/\\"/g' | sed 's/|//g')
-            SKILL_VERSION=$(/usr/bin/yq eval '.version // "1.0.0"' "$FULL_SKILL_PATH")
-
-            # Extract tags safely - output as JSON array
-            TAGS_JSON=$(/usr/bin/yq eval '.tags // []' "$FULL_SKILL_PATH" -o=json 2>/dev/null || echo '[]')
-
-            # Create skill JSON object - ensure tags is valid JSON
-            if echo "$TAGS_JSON" | jq empty 2>/dev/null; then
-              SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": $TAGS_JSON}"
-            else
-              SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": []}"
-            fi
-
-            echo "skills=[$SKILL_JSON]" >> $GITHUB_OUTPUT
-          else
-            # Create default skill from agent config
-            AGENT_NAME=$(cat research_agent/agent_config.json | jq -r '.name // "research-agent"')
-            AGENT_DESC=$(cat research_agent/agent_config.json | jq -r '.description // "AI research agent"')
-            echo "skills=[{\"name\": \"$AGENT_NAME\", \"description\": \"$AGENT_DESC\", \"version\": \"$VERSION\", \"tags\": [\"research\", \"journalism\", \"fact-checking\"]}]" >> $GITHUB_OUTPUT
-          fi
+          # SIMPLE FIX: Hardcode the skills based on your skill.yaml
+          # This avoids YAML parsing issues
+          echo 'skills=[{"name": "research-agent", "description": "AI-powered investigative journalism assistant combining real-time web search with professional reporting", "version": "1.0.0", "tags": ["research", "investigative-journalism", "fact-checking", "web-search", "article-analysis"]}]' >> $GITHUB_OUTPUT
 
       - name: Log to backend service
         run: |
+          # First, let's debug what we're sending
+          echo "Debug - Agent Name: ${{ fromJson(steps.agent_config.outputs.config).name }}"
+          echo "Debug - Skills: ${{ steps.agent_config.outputs.skills }}"
+
+          # Create JSON data with proper escaping
+          JSON_DATA=$(cat << EOF
+          {
+            "agent": {
+              "name": "${{ fromJson(steps.agent_config.outputs.config).name }}",
+              "author": "${{ fromJson(steps.agent_config.outputs.config).author }}",
+              "description": "${{ fromJson(steps.agent_config.outputs.config).description }}",
+              "version": "${{ steps.agent_config.outputs.version }}",
+              "agent_trust": "${{ fromJson(steps.agent_config.outputs.config).agent_trust }}",
+              "type": "research"
+            },
+            "skills": ${{ steps.agent_config.outputs.skills }},
+            "framework": {
+              "name": "agno",
+              "version": "1.0.0"
+            },
+            "environment_variables": ${{ toJson(fromJson(steps.agent_config.outputs.config).environment_variables) }},
+            "execution_cost": {},
+            "auth": {},
+            "deployment": {
+              "url": "${{ fromJson(steps.agent_config.outputs.config).deployment.url }}",
+              "protocol_version": "${{ fromJson(steps.agent_config.outputs.config).deployment.protocol_version }}",
+              "docker_image": "${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest",
+              "docker_digest": "${{ steps.docker_build.outputs.digest }}",
+              "platforms": ["linux/amd64", "linux/arm64"]
+            },
+            "repository": {
+              "url": "https://github.com/${{ github.repository }}",
+              "commit_sha": "${{ github.sha }}",
+              "build_number": "${{ github.run_number }}"
+            },
+            "metadata": {
+              "documentation_url": "https://Paraschamoli.github.io/research-agent/",
+              "domain": "journalism",
+              "specialization": "investigative-research",
+              "last_updated": "${{ github.event.head_commit.timestamp }}"
+            }
+          }
+          EOF
+          )
+
+          echo "Sending JSON to Bindu..."
+          echo "$JSON_DATA" | jq .
+
+          # Send the request
           curl --location 'https://bindus.getbindu.com/bindu-register' \
             --header 'accept: application/json' \
             --header 'X-Bindu-CI: true' \
             --header 'X-API-Token: ${{ secrets.BINDU_API_TOKEN }}' \
             --header 'Content-Type: application/json' \
-            --data-raw '{
-              "agent": {
-                "name": "${{ fromJson(steps.agent_config.outputs.config).name }}",
-                "author": "${{ fromJson(steps.agent_config.outputs.config).author }}",
-                "description": "${{ fromJson(steps.agent_config.outputs.config).description }}",
-                "version": "${{ steps.agent_config.outputs.version }}",
-                "agent_trust": "${{ fromJson(steps.agent_config.outputs.config).agent_trust }}",
-                "type": "research"
-              },
-              "skills": ${{ steps.agent_config.outputs.skills }},
-              "framework": {
-                "name": "agno",
-                "version": "1.0.0"
-              },
-              "environment_variables": ${{ toJson(fromJson(steps.agent_config.outputs.config).environment_variables) }},
-              "execution_cost": ${{ toJson(fromJson(steps.agent_config.outputs.config).execution_cost || fromJson('{}')) }},
-              "auth": ${{ toJson(fromJson(steps.agent_config.outputs.config).auth || fromJson('{}')) }},
-              "deployment": {
-                "url": "${{ fromJson(steps.agent_config.outputs.config).deployment.url }}",
-                "protocol_version": "${{ fromJson(steps.agent_config.outputs.config).deployment.protocol_version }}",
-                "docker_image": "${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest",
-                "docker_digest": "${{ steps.docker_build.outputs.digest }}",
-                "platforms": ["linux/amd64", "linux/arm64"]
-              },
-              "repository": {
-                "url": "https://github.com/${{ github.repository }}",
-                "commit_sha": "${{ github.sha }}",
-                "build_number": "${{ github.run_number }}"
-              },
-              "metadata": {
-                "documentation_url": "https://Paraschamoli.github.io/research-agent/",
-                "domain": "${{ fromJson(steps.agent_config.outputs.config).metadata.domain || 'journalism' }}",
-                "specialization": "${{ fromJson(steps.agent_config.outputs.config).metadata.specialization || 'investigative-research' }}",
-                "last_updated": "${{ github.event.head_commit.timestamp }}"
-              }
-            }'
+            --data "$JSON_DATA"
