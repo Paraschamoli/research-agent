@@ -5,7 +5,10 @@
   "version": "1.0.0",
   "recreate_keys": false,
   "skills": [
-    "skills/research-agent/skill.yaml"
+    {
+      "name": "research-agent",
+      "path": "skills/research-agent"
+    }
   ],
   "capabilities": {},
   "agent_trust": "low",
