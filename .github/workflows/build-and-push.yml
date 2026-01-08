@@ -45,7 +45,7 @@ jobs:
 
       - name: Install yq for YAML processing
         run: |
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -O /usr/bin/yq
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
 
       - name: Read agent config and skills
@@ -66,19 +66,26 @@ jobs:
 
           if [ -f "$FULL_SKILL_PATH" ]; then
             # Read skill info from YAML file
-            SKILL_NAME=$(yq eval '.name // .id // "research-agent"' "$FULL_SKILL_PATH")
-            SKILL_DESC=$(yq eval '.description // ""' "$FULL_SKILL_PATH" | tr '\n' ' ' | sed 's/"/\\"/g' | sed 's/|//g')
-            SKILL_VERSION=$(yq eval '.version // "1.0.0"' "$FULL_SKILL_PATH")
-            TAGS=$(yq eval '.tags // []' "$FULL_SKILL_PATH" -o=json 2>/dev/null || echo '[]')
+            SKILL_NAME=$(/usr/bin/yq eval '.name // .id // "research-agent"' "$FULL_SKILL_PATH")
+            SKILL_DESC=$(/usr/bin/yq eval '.description // ""' "$FULL_SKILL_PATH" | tr '\n' ' ' | sed 's/"/\\"/g' | sed 's/|//g')
+            SKILL_VERSION=$(/usr/bin/yq eval '.version // "1.0.0"' "$FULL_SKILL_PATH")
 
-            # Create skill JSON object
-            SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": $TAGS}"
+            # Extract tags safely - output as JSON array
+            TAGS_JSON=$(/usr/bin/yq eval '.tags // []' "$FULL_SKILL_PATH" -o=json 2>/dev/null || echo '[]')
+
+            # Create skill JSON object - ensure tags is valid JSON
+            if echo "$TAGS_JSON" | jq empty 2>/dev/null; then
+              SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": $TAGS_JSON}"
+            else
+              SKILL_JSON="{\"name\": \"$SKILL_NAME\", \"description\": \"$SKILL_DESC\", \"version\": \"$SKILL_VERSION\", \"tags\": []}"
+            fi
+
             echo "skills=[$SKILL_JSON]" >> $GITHUB_OUTPUT
           else
             # Create default skill from agent config
             AGENT_NAME=$(cat research_agent/agent_config.json | jq -r '.name // "research-agent"')
             AGENT_DESC=$(cat research_agent/agent_config.json | jq -r '.description // "AI research agent"')
-            echo "skills=[{\"name\": \"$AGENT_NAME\", \"description\": \"$AGENT_DESC\", \"version\": \"$VERSION\"}]" >> $GITHUB_OUTPUT
+            echo "skills=[{\"name\": \"$AGENT_NAME\", \"description\": \"$AGENT_DESC\", \"version\": \"$VERSION\", \"tags\": [\"research\", \"journalism\", \"fact-checking\"]}]" >> $GITHUB_OUTPUT
           fi
 
       - name: Log to backend service
