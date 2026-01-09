@@ -30,9 +30,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://Paraschamoli.github.io/research-agent/"
 Repository = "https://github.com/Paraschamoli/research-agent"
-Documentation = "https://Paraschamoli.github.io/research-agent/"
+Homepage = "https://github.com/Paraschamoli/research-agent"
+Documentation = "https://github.com/Paraschamoli/research-agent#readme"
+
 
 [dependency-groups]
 dev = [
