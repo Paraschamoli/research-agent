@@ -106,7 +106,7 @@ jobs:
                 "build_number": $build_number
               },
               "metadata": {
-                "documentation_url": "https://Paraschamoli.github.io/research-agent/",
+                "documentation_url": "https://github.com/Paraschamoli/research-agent#readme",
                 "domain": "journalism",
                 "specialization": "investigative-research",
                 "last_updated": $last_updated
