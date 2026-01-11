@@ -31,6 +31,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep '^version = ' pyproject.toml | sed "s/version = \"\(.*\)\"/\1/" | tr -d '\n')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v5
@@ -39,7 +46,11 @@ jobs:
           file: ./Dockerfile.agent
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:${{ steps.version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:build-${{ github.run_number }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/research-agent:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/research-agent:buildcache,mode=max
 
@@ -66,10 +77,14 @@ jobs:
             SKILL_JSON="{}"
           fi
 
+          # Get version from pyproject.toml
+          VERSION=$(grep '^version = ' pyproject.toml | sed "s/version = \"\(.*\)\"/\1/" | tr -d '\n')
+
           # Create the complete registration payload using jq for proper JSON construction
           REGISTRATION_PAYLOAD=$(jq -n \
             --argjson agent_config "$AGENT_CONFIG" \
             --argjson skill "$SKILL_JSON" \
+            --arg version "$VERSION" \
             --arg docker_image "${{ secrets.DOCKERHUB_USERNAME }}/research-agent:latest" \
             --arg docker_digest "${{ steps.docker_build.outputs.digest }}" \
             --arg repo_url "https://github.com/${{ github.repository }}" \
@@ -81,7 +96,7 @@ jobs:
                 "name": $agent_config.name,
                 "author": $agent_config.author,
                 "description": $agent_config.description,
-                "version": $agent_config.version,
+                "version": $version,
                 "agent_trust": $agent_config.agent_trust,
                 "type": "research"
               },
@@ -130,3 +145,6 @@ jobs:
             --header "X-API-Token: ${{ secrets.BINDU_API_TOKEN }}" \
             --header 'Content-Type: application/json' \
             --data-binary @registration_payload.json
+
+          echo ""
+          echo "✅ Registration complete"

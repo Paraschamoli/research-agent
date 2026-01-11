@@ -1,14 +1,11 @@
 {
   "author": "paras25619@gmail.com",
   "name": "research-agent",
-  "description": "AI research agent that combines web search with professional journalism",
+  "description": "AI research agent that combines web search with professional journalism to perform comprehensive research, fact-check information, and deliver well-structured NYT-style articles.",
   "version": "1.0.0",
   "recreate_keys": false,
   "skills": [
-    {
-      "name": "research-agent",
-      "path": "skills/research-agent"
-    }
+    "skills/research-agent"
   ],
   "capabilities": {},
   "agent_trust": "low",
@@ -41,6 +38,11 @@
     {
       "key": "OPENROUTER_API_KEY",
       "description": "OpenRouter API key for LLM calls",
+      "required": false
+    },
+    {
+      "key": "MEM0_API_KEY",
+      "description": "Mem0 API key for memory operations",
       "required": false
     }
   ]

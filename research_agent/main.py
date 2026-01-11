@@ -38,34 +38,25 @@ def load_config() -> dict:
     ]
 
     for config_path in possible_paths:
-        print(f"🔍 Checking: {config_path} (exists: {config_path.exists()})")
         if config_path.exists():
             try:
-                print(f"📄 Attempting to load config from: {config_path}")
                 with open(config_path) as f:
-                    config = json.load(f)
-                    print("✅ Successfully loaded config")
-                    return config
-            except PermissionError as e:
-                print(f"⚠️  Permission denied for {config_path}: {e}")
-                print("   Try running as Administrator or check file permissions")
-                continue
-            except json.JSONDecodeError as e:
-                print(f"⚠️  Invalid JSON in {config_path}: {e}")
+                    return json.load(f)
+            except (PermissionError, json.JSONDecodeError) as e:
+                print(f"⚠️  Error reading {config_path}: {type(e).__name__}")
                 continue
             except Exception as e:
-                print(f"⚠️  Error reading {config_path}: {type(e).__name__}: {e}")
-                traceback.print_exc()
+                print(f"⚠️  Unexpected error reading {config_path}: {type(e).__name__}")
                 continue
 
     # If no config found or readable, create a minimal default
-    print("⚠️  No agent_config.json found or readable, using default configuration")
+    print("⚠️  No agent_config.json found, using default configuration")
     return {
         "name": "research-agent",
         "description": "AI research agent for investigative journalism",
         "version": "1.0.0",
         "deployment": {
-            "url": "http://0.0.0.0:3773",
+            "url": "http://127.0.0.1:3773",
             "expose": True,
             "protocol_version": "1.0.0",
             "proxy_urls": ["127.0.0.1"],
@@ -85,18 +76,28 @@ async def initialize_agent() -> None:
     # Get API keys from environment
     openai_api_key = os.getenv("OPENAI_API_KEY")
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+    model_name = os.getenv("MODEL_NAME", "openai/gpt-4o")
 
     # Model selection logic (supports both OpenAI and OpenRouter)
     if openai_api_key:
         model = OpenAIChat(id="gpt-4o", api_key=openai_api_key)
         print("✅ Using OpenAI GPT-4o")
     elif openrouter_api_key:
-        model = OpenRouter(id="openai/gpt-4o", api_key=openrouter_api_key)
-        print("✅ Using OpenRouter GPT-4o")
+        model = OpenRouter(
+            id=model_name,
+            api_key=openrouter_api_key,
+            cache_response=True,
+            supports_native_structured_outputs=True,
+        )
+        print(f"✅ Using OpenRouter model: {model_name}")
     else:
-        # Boot without error, fail at runtime when needed
-        model = OpenAIChat(id="gpt-4o")
-        print("⚠️  No API key provided - agent will fail at runtime")
+        # Define error message separately to avoid TRY003
+        error_msg = (
+            "No API key provided. Set OPENAI_API_KEY or OPENROUTER_API_KEY environment variable.\n"
+            "For OpenRouter: https://openrouter.ai/keys\n"
+            "For OpenAI: https://platform.openai.com/api-keys"
+        )
+        raise ValueError(error_msg)
 
     # Initialize tools
     search_tools = DuckDuckGoTools()
@@ -202,7 +203,9 @@ async def run_agent(messages: list[dict[str, str]]) -> Any:
     """Run the agent with the given messages."""
     global agent
     if not agent:
-        raise RuntimeError("Agent not initialized")  # noqa: TRY003
+        # Define error message separately to avoid TRY003
+        error_msg = "Agent not initialized"
+        raise RuntimeError(error_msg)
 
     # Run the agent and get response
     response = await agent.arun(messages)
@@ -225,6 +228,11 @@ async def handler(messages: list[dict[str, str]]) -> Any:
     return result
 
 
+async def cleanup() -> None:
+    """Clean up any resources."""
+    print("🧹 Cleaning up Research Agent resources...")
+
+
 def main():
     """Run the main entry point for the Research Agent."""
     parser = argparse.ArgumentParser(description="Bindu Research Agent")
@@ -241,6 +249,12 @@ def main():
         help="OpenRouter API key (env: OPENROUTER_API_KEY)",
     )
     parser.add_argument(
+        "--model",
+        type=str,
+        default=os.getenv("MODEL_NAME", "openai/gpt-4o"),
+        help="Model ID for OpenRouter (env: MODEL_NAME)",
+    )
+    parser.add_argument(
         "--config",
         type=str,
         help="Path to agent_config.json (optional)",
@@ -252,6 +266,8 @@ def main():
         os.environ["OPENAI_API_KEY"] = args.openai_api_key
     if args.openrouter_api_key:
         os.environ["OPENROUTER_API_KEY"] = args.openrouter_api_key
+    if args.model:
+        os.environ["MODEL_NAME"] = args.model
 
     print("🤖 Research Agent - Investigative Journalism AI")
     print("📰 Capabilities: Web search, article extraction, NYT-style reporting")
@@ -262,7 +278,7 @@ def main():
     try:
         # Bindufy and start the agent server
         print("🚀 Starting Bindu Research Agent server...")
-        print(f"🌐 Server will run on: {config.get('deployment', {}).get('url', 'http://0.0.0.0:3773')}")
+        print(f"🌐 Server will run on: {config.get('deployment', {}).get('url', 'http://127.0.0.1:3773')}")
         bindufy(config, handler)
     except KeyboardInterrupt:
         print("\n🛑 Research Agent stopped")
@@ -270,6 +286,9 @@ def main():
         print(f"❌ Error: {e}")
         traceback.print_exc()
         sys.exit(1)
+    finally:
+        # Cleanup on exit
+        asyncio.run(cleanup())
 
 
 if __name__ == "__main__":

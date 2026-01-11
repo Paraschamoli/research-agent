@@ -1,16 +1,15 @@
 [project]
 name = "research-agent"
-version = "0.0.1"
+version = "0.1.0"
 description = "Research Agent using Agno framework"
 authors = [{ name = "Paras Chamoli", email = "paras25619@gmail.com" }]
 readme = "README.md"
 keywords = ['python']
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "bindu==2025.49.3",
+    "bindu==2026.1.7",
     "agno>=2.2.0",
     "fastmcp>=2.11.0",
-
     "requests>=2.31.0",
     "pyperclip>=1.8.0",
     "rich>=13.0.0",
@@ -18,8 +17,10 @@ dependencies = [
     "sqlalchemy>=2.0.45",
     "mem0ai>=1.0.1",
     "ddgs>=9.9.3",
-     "newspaper4k>=0.1.1",
+    "newspaper4k>=0.1.1",
     "lxml_html_clean>=0.1.0",
+    "arxiv>=2.4.0",
+    "pypdf>=6.6.0",
 ]
 classifiers = [
     "Intended Audience :: Developers",
