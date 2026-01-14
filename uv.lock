@@ -258,7 +258,7 @@ wheels = [
 
 [[package]]
 name = "bindu"
-version = "2026.1.7"
+version = "2026.1.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agno" },
@@ -299,9 +299,9 @@ dependencies = [
     { name = "web3" },
     { name = "x402" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/d6/2ad754ecc0559190706ef9e5cdb5323ba023c0fb3ba5f62cabec58223cf4/bindu-2026.1.7.tar.gz", hash = "sha256:0d4507ee69b8ea54caf9084dc3d37728dcb25c428083ed9aca1d95b6838dc241", size = 8534779, upload-time = "2026-01-07T12:20:01.271Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/f8/9c0a4f2d5a8dc230c9738f43c462a8ceb18ce88855f6b754a9614122c042/bindu-2026.1.12.tar.gz", hash = "sha256:22eb3da0aac3dc286affdc0798640f0222fe0a3a9d1f32bd56a86ca9114ea8ea", size = 8534786, upload-time = "2026-01-12T08:03:11.465Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/57/f6e7fcf830f605d0638cf9a1891797495add5d43ebca9b4f439697efc099/bindu-2026.1.7-py3-none-any.whl", hash = "sha256:17c59a8dd8743b8e3e8efecdee6de7cfecd983ef06513fd94b27cc65f3c2ed36", size = 213330, upload-time = "2026-01-07T12:19:59.754Z" },
+    { url = "https://files.pythonhosted.org/packages/99/c4/d993655581fffd4261d67b05f7a096dc1ca8263d70f949f3c482afd2c234/bindu-2026.1.12-py3-none-any.whl", hash = "sha256:f53e924803a064c7746e6969e710460a08c1318354405d87b0a36400fe353a7a", size = 213342, upload-time = "2026-01-12T08:03:13.639Z" },
 ]
 
 [[package]]
@@ -2838,7 +2838,7 @@ dev = [
 requires-dist = [
     { name = "agno", specifier = ">=2.2.0" },
     { name = "arxiv", specifier = ">=2.4.0" },
-    { name = "bindu", specifier = "==2026.1.7" },
+    { name = "bindu", specifier = "==2026.1.12" },
     { name = "ddgs", specifier = ">=9.9.3" },
     { name = "fastmcp", specifier = ">=2.11.0" },
     { name = "lxml-html-clean", specifier = ">=0.1.0" },
@@ -3128,11 +3128,11 @@ wheels = [
 
 [[package]]
 name = "tenacity"
-version = "9.1.2"
+version = "8.5.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0a/d4/2b0cd0fe285e14b36db076e78c93766ff1d529d70408bd1d2a5a84f1d929/tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb", size = 48036, upload-time = "2025-04-02T08:25:09.966Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/4d/6a19536c50b849338fcbe9290d562b52cbdcf30d8963d3588a68a4107df1/tenacity-8.5.0.tar.gz", hash = "sha256:8bc6c0c8a09b31e6cad13c47afbed1a567518250a9a171418582ed8d9c20ca78", size = 47309, upload-time = "2024-07-05T07:25:31.836Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/30/643397144bfbfec6f6ef821f36f33e57d35946c44a2352d3c9f0ae847619/tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138", size = 28248, upload-time = "2025-04-02T08:25:07.678Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/3f/8ba87d9e287b9d385a02a7114ddcef61b26f86411e121c9003eb509a1773/tenacity-8.5.0-py3-none-any.whl", hash = "sha256:b594c2a5945830c267ce6b79a166228323ed52718f30302c1359836112346687", size = 28165, upload-time = "2024-07-05T07:25:29.591Z" },
 ]
 
 [[package]]
