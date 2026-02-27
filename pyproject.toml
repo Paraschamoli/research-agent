@@ -2,7 +2,7 @@
 name = "research-agent"
 version = "0.1.0"
 description = "Research Agent using Agno framework"
-authors = [{ name = "Paras Chamoli", email = "paras25619@gmail.com" }]
+authors = [{ name = "Paras Chamoli", email = "paras@getbindu.com" }]
 readme = "README.md"
 keywords = ['python']
 requires-python = ">=3.12,<3.13"
